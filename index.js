@@ -62,7 +62,7 @@ let currentTableData = null;
       const headerRow1 = document.createElement('tr');
       const th = document.createElement('th');
       th.colSpan = 3 + (endDay - startDay + 1);
-      th.innerText = `${className} - ${new Date(year, month - 1).toLocaleString('default', { month: 'long' })} ${year} (Days ${startDay}-${endDay})`;
+      th.innerText = `${className} - ${new Date(year, month - 1).toLocaleString('default', { month: 'long' })} ${year} `;
       th.classList.add('text-center');
       headerRow1.appendChild(th);
       thead.appendChild(headerRow1);
