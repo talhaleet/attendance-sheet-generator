@@ -131,7 +131,7 @@ let currentTableData = null;
       const wsData = [];
       
       // Add title row
-      wsData.push([`${currentTableData.className} - ${currentTableData.month} ${currentTableData.year} (Days ${currentTableData.startDay}-${currentTableData.endDay})`]);
+      wsData.push([`${currentTableData.className} - ${currentTableData.month} ${currentTableData.year} `]);
       
       // Add header row
       const headers = ['Sr #', 'Student\'s Name', 'Father Name'];
