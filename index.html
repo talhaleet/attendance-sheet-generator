@@ -11,9 +11,10 @@
  <link rel="stylesheet" href="index.css">
  <link rel="icon" href="logo.png" type="image/png">
 </head>
+ <link rel="stylesheet" href="index.css">
 
 <body>
-  <div class="form-container">
+    <div class="form-container">
     <h3 class="text-center mb-4">Attendance Sheet Generator</h3>
     <form id="attendance-form">
       <div class="row mb-3">
@@ -33,11 +34,21 @@
       <div class="row mb-3">
         <div class="col-md-6">
           <label for="bulkNames" class="form-label">Paste Student Names (one per line)</label>
-          <textarea id="bulkNames" class="form-control" rows="6" required></textarea>
+          <textarea id="bulkNames" class="form-control" rows="6" ></textarea>
         </div>
         <div class="col-md-6">
           <label for="bulkFathers" class="form-label">Paste Father Names (one per line)</label>
-          <textarea id="bulkFathers" class="form-control" rows="6" required></textarea>
+          <textarea id="bulkFathers" class="form-control" rows="6" ></textarea>
+        </div>
+      </div>
+      <div class="row mb-3" id="day-range-container" style="display: none;">
+        <div class="col-md-6">
+          <label for="startDay" class="form-label">Start Day</label>
+          <select id="startDay" class="form-control"></select>
+        </div>
+        <div class="col-md-6">
+          <label for="endDay" class="form-label">End Day</label>
+          <select id="endDay" class="form-control"></select>
         </div>
       </div>
       <button type="submit" class="btn btn-primary w-100">Generate Attendance Sheet</button>
@@ -49,8 +60,7 @@
     </div>
   </div>
 
- <script src="index.js">
-
- </script>
+ 
+  <script src="index.js"></script>
 </body>
 </html>

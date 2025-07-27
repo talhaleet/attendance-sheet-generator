@@ -1,5 +1,36 @@
 let currentTableData = null;
 
+    document.getElementById('month').addEventListener('change', function() {
+      const monthInput = this.value;
+      if (!monthInput) return;
+      
+      const [year, month] = monthInput.split('-');
+      const daysInMonth = new Date(year, month, 0).getDate();
+      
+      const startDaySelect = document.getElementById('startDay');
+      const endDaySelect = document.getElementById('endDay');
+      
+      // Clear existing options
+      startDaySelect.innerHTML = '';
+      endDaySelect.innerHTML = '';
+      
+      // Add options for each day
+      for (let i = 1; i <= daysInMonth; i++) {
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = i;
+        startDaySelect.appendChild(option.cloneNode(true));
+        endDaySelect.appendChild(option);
+      }
+      
+      // Set default values
+      startDaySelect.value = 1;
+      endDaySelect.value = daysInMonth;
+      
+      // Show the day range container
+      document.getElementById('day-range-container').style.display = 'block';
+    });
+
     document.getElementById('attendance-form').addEventListener('submit', function (e) {
       e.preventDefault();
 
@@ -12,6 +43,15 @@ let currentTableData = null;
       const [year, month] = monthInput.split('-');
       const daysInMonth = new Date(year, month, 0).getDate();
       const studentCount = parseInt(document.getElementById('studentCount').value);
+      const startDay = parseInt(document.getElementById('startDay').value);
+      const endDay = parseInt(document.getElementById('endDay').value);
+      
+      // Validate day range
+      if (startDay > endDay) {
+        alert('Start day cannot be greater than end day');
+        return;
+      }
+      
       const table = document.createElement('table');
       const thead = document.createElement('thead');
 
@@ -21,8 +61,8 @@ let currentTableData = null;
 
       const headerRow1 = document.createElement('tr');
       const th = document.createElement('th');
-      th.colSpan = 3 + daysInMonth;
-      th.innerText = `${className} - ${new Date(year, month - 1).toLocaleString('default', { month: 'long' })} ${year}`;
+      th.colSpan = 3 + (endDay - startDay + 1);
+      th.innerText = `${className} - ${new Date(year, month - 1).toLocaleString('default', { month: 'long' })} ${year} (Days ${startDay}-${endDay})`;
       th.classList.add('text-center');
       headerRow1.appendChild(th);
       thead.appendChild(headerRow1);
@@ -31,7 +71,7 @@ let currentTableData = null;
       headerRow2.innerHTML = '<th>Sr #</th><th style="min-width: 120px">Student\'s Name</th><th style="min-width: 120px">Father Name</th>';
 
       let sundayIndexes = [];
-      for (let i = 1; i <= daysInMonth; i++) {
+      for (let i = startDay; i <= endDay; i++) {
         const date = new Date(year, month - 1, i);
         if (date.getDay() === 0) sundayIndexes.push(i);
         const th = document.createElement('th');
@@ -47,7 +87,7 @@ let currentTableData = null;
       for (let i = 0; i < studentCount; i++) {
         const tr = document.createElement('tr');
         tr.innerHTML = `<td>${i + 1}</td><td>${studentNames[i]}</td><td>${fatherNames[i]}</td>`;
-        for (let j = 1; j <= daysInMonth; j++) {
+        for (let j = startDay; j <= endDay; j++) {
           const td = document.createElement('td');
           if (sundayIndexes.includes(j) && !sundayRendered[j]) {
             td.rowSpan = studentNames.length;
@@ -76,7 +116,9 @@ let currentTableData = null;
         daysInMonth,
         studentNames,
         fatherNames,
-        sundayIndexes
+        sundayIndexes,
+        startDay,
+        endDay
       };
 
       document.getElementById('excel-btn').disabled = false;
@@ -89,24 +131,24 @@ let currentTableData = null;
       const wsData = [];
       
       // Add title row
-      wsData.push([`${currentTableData.className} - ${currentTableData.month} ${currentTableData.year}`]);
+      wsData.push([`${currentTableData.className} - ${currentTableData.month} ${currentTableData.year} (Days ${currentTableData.startDay}-${currentTableData.endDay})`]);
       
       // Add header row
       const headers = ['Sr #', 'Student\'s Name', 'Father Name'];
-      for (let i = 1; i <= currentTableData.daysInMonth; i++) {
+      for (let i = currentTableData.startDay; i <= currentTableData.endDay; i++) {
         headers.push(i);
       }
       wsData.push(headers);
       
       // Add student data
-      for (let i = 0; i < currentTableData.studentCount; i++) {
+      for (let i = 0; i < currentTableData.studentNames.length; i++) {
         const row = [
           i + 1,
           currentTableData.studentNames[i],
           currentTableData.fatherNames[i]
         ];
         
-        for (let j = 1; j <= currentTableData.daysInMonth; j++) {
+        for (let j = currentTableData.startDay; j <= currentTableData.endDay; j++) {
           if (currentTableData.sundayIndexes.includes(j)) {
             // For Sunday columns, add "SUN" only for first row
             row.push(i === 0 ? "SUN" : "");
@@ -121,10 +163,10 @@ let currentTableData = null;
       
       // Merge Sunday cells
       currentTableData.sundayIndexes.forEach(day => {
-        const colIndex = 3 + day - 1; // 3 initial columns + day - 1 (0-based)
+        const colIndex = 3 + day - currentTableData.startDay; // 3 initial columns + day - startDay (0-based)
         const range = {
           s: { r: 1, c: colIndex }, // header row
-          e: { r: 1 + currentTableData.studentCount, c: colIndex }
+          e: { r: 1 + currentTableData.studentNames.length, c: colIndex }
         };
         if (!ws['!merges']) ws['!merges'] = [];
         ws['!merges'].push(range);
@@ -133,10 +175,10 @@ let currentTableData = null;
       // Merge title row
       const titleRange = {
         s: { r: 0, c: 0 },
-        e: { r: 0, c: 3 + currentTableData.daysInMonth - 1 }
+        e: { r: 0, c: 3 + (currentTableData.endDay - currentTableData.startDay) }
       };
       ws['!merges'].push(titleRange);
       
       XLSX.utils.book_append_sheet(wb, ws, "Attendance");
-      XLSX.writeFile(wb, `${currentTableData.className}_${currentTableData.month}_Attendance.xlsx`);
+      XLSX.writeFile(wb, `${currentTableData.className}_${currentTableData.month}_Attendance_${currentTableData.startDay}-${currentTableData.endDay}.xlsx`);
     }
